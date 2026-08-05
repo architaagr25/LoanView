@@ -42,10 +42,10 @@ export const me: RequestHandler = async (req, res) => {
     throw ApiError.unauthorized();
   }
 
-  const user = await getCurrentUser(req.auth.userId);
+  const result = await getCurrentUser(req.auth.userId);
 
   res.json({
     success: true,
-    data: { user },
+    data: result,
   });
 };

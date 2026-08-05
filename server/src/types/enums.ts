@@ -28,6 +28,45 @@ export const STAFF_ROLES: UserRole[] = [
   UserRole.COLLECTION,
 ];
 
+/**
+ * The four operations modules, each owning one stage of the loan lifecycle.
+ * A module's name matches the role that owns it, but they are kept as separate
+ * concepts because they answer different questions: a role is who someone is,
+ * a module is what part of the dashboard they are looking at.
+ */
+export const DashboardModule = {
+  SALES: "sales",
+  SANCTION: "sanction",
+  DISBURSEMENT: "disbursement",
+  COLLECTION: "collection",
+} as const;
+
+export type DashboardModule = (typeof DashboardModule)[keyof typeof DashboardModule];
+export const DASHBOARD_MODULES = Object.values(DashboardModule);
+
+/** The role permitted to work in each module, before the admin override. */
+export const MODULE_OWNER_ROLE: Record<DashboardModule, UserRole> = {
+  [DashboardModule.SALES]: UserRole.SALES,
+  [DashboardModule.SANCTION]: UserRole.SANCTION,
+  [DashboardModule.DISBURSEMENT]: UserRole.DISBURSEMENT,
+  [DashboardModule.COLLECTION]: UserRole.COLLECTION,
+};
+
+/**
+ * Modules a role may open. Admin sees every module; each executive sees exactly
+ * one; a borrower sees none, having no dashboard access at all.
+ *
+ * Used by the authorisation middleware and returned to the frontend so the
+ * navigation is built from the same rule the API enforces, rather than from a
+ * second copy of the logic that could drift out of step with it.
+ */
+export function modulesForRole(role: UserRole): DashboardModule[] {
+  if (role === UserRole.ADMIN) {
+    return [...DASHBOARD_MODULES];
+  }
+  return DASHBOARD_MODULES.filter((module) => MODULE_OWNER_ROLE[module] === role);
+}
+
 export const EmploymentMode = {
   SALARIED: "SALARIED",
   SELF_EMPLOYED: "SELF_EMPLOYED",

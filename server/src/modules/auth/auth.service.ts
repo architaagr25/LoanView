@@ -1,5 +1,5 @@
 import { User, type UserDocument } from "../../models";
-import { UserRole } from "../../types/enums";
+import { modulesForRole, UserRole, type DashboardModule } from "../../types/enums";
 import { ApiError } from "../../utils/ApiError";
 import { hashPassword, verifyPassword } from "../../utils/password";
 import { signToken } from "../../utils/jwt";
@@ -8,6 +8,7 @@ import type { LoginInput, SignupInput } from "./auth.validation";
 interface AuthResult {
   token: string;
   user: unknown;
+  modules: DashboardModule[];
 }
 
 function buildAuthResult(user: UserDocument): AuthResult {
@@ -15,6 +16,9 @@ function buildAuthResult(user: UserDocument): AuthResult {
     token: signToken({ sub: user._id.toString(), role: user.role }),
     // toJSON strips the password hash and the internal id fields.
     user: user.toJSON(),
+    // Sent so the interface builds its navigation from the server's own rule
+    // rather than from a second copy of it that could drift out of step.
+    modules: modulesForRole(user.role),
   };
 }
 
@@ -61,10 +65,15 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
   return buildAuthResult(user);
 }
 
-export async function getCurrentUser(userId: string): Promise<unknown> {
+export async function getCurrentUser(
+  userId: string,
+): Promise<{ user: unknown; modules: DashboardModule[] }> {
   const user = await User.findById(userId);
   if (!user) {
     throw ApiError.notFound("User not found");
   }
-  return user.toJSON();
+  return {
+    user: user.toJSON(),
+    modules: modulesForRole(user.role),
+  };
 }
