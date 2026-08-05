@@ -1,5 +1,5 @@
 import { FileAsset, Loan, Profile, type ProfileDocument } from "../../models";
-import { BreStatus, LoanStatus } from "../../types/enums";
+import { ACTIVE_LOAN_STATUSES, BreStatus } from "../../types/enums";
 import { ApiError } from "../../utils/ApiError";
 import { detectFileType, sanitiseFilename } from "../../utils/fileSignature";
 import { evaluateEligibility, type BreEvaluation } from "./bre";
@@ -7,14 +7,15 @@ import type { SubmitProfileInput } from "./borrower.validation";
 
 /**
  * A borrower may revise their details freely until an application is in play.
- * Once a loan exists in any state other than rejected, the details are the
- * basis of a decision someone made, and quietly changing them underneath that
- * decision would make the audit trail meaningless.
+ * While a loan is live, those details are the basis of a decision someone made,
+ * and quietly changing them underneath that decision would make the audit trail
+ * meaningless. Rejected and closed loans are finished, so they impose no such
+ * restriction — a borrower whose loan closed may reapply with fresh details.
  */
 async function assertNoLoanInProgress(userId: string): Promise<void> {
   const activeLoan = await Loan.findOne({
     borrower: userId,
-    status: { $ne: LoanStatus.REJECTED },
+    status: { $in: ACTIVE_LOAN_STATUSES },
   }).select("_id status");
 
   if (activeLoan) {

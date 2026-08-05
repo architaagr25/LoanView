@@ -3,7 +3,14 @@ import { authenticate } from "../../middleware/authenticate";
 import { requireRole } from "../../middleware/authorize";
 import { UserRole } from "../../types/enums";
 import { salarySlipUpload } from "../../middleware/upload";
-import { getProfile, submitProfile, uploadSalarySlip } from "./borrower.controller";
+import {
+  applyForLoan,
+  getMyLoan,
+  getProfile,
+  listMyLoans,
+  submitProfile,
+  uploadSalarySlip,
+} from "./borrower.controller";
 
 const router = Router();
 
@@ -16,5 +23,9 @@ router.get("/profile", getProfile);
 router.post("/profile", submitProfile);
 
 router.post("/salary-slip", salarySlipUpload, uploadSalarySlip);
+
+router.get("/loans", listMyLoans);
+router.post("/loans", applyForLoan);
+router.get("/loans/:id", getMyLoan);
 
 export default router;

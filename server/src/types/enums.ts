@@ -105,6 +105,17 @@ export type LoanStatus = (typeof LoanStatus)[keyof typeof LoanStatus];
 export const LOAN_STATUSES = Object.values(LoanStatus);
 
 /**
+ * Statuses in which a loan is still live. A borrower may hold only one loan in
+ * these states at a time, and their personal details are frozen while they do.
+ * Rejected and closed loans are finished business and impose no such limit.
+ */
+export const ACTIVE_LOAN_STATUSES: LoanStatus[] = [
+  LoanStatus.APPLIED,
+  LoanStatus.SANCTIONED,
+  LoanStatus.DISBURSED,
+];
+
+/**
  * The only status changes the system permits, and who may trigger each one.
  * Enforced in the service layer so an out-of-order transition is rejected even
  * if a request reaches the endpoint directly, bypassing the interface.

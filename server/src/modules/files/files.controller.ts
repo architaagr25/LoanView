@@ -3,6 +3,7 @@ import { FileAsset } from "../../models";
 import { STAFF_ROLES } from "../../types/enums";
 import { ApiError } from "../../utils/ApiError";
 import { sanitiseFilename } from "../../utils/fileSignature";
+import { routeParam } from "../../utils/http";
 
 /**
  * Serves an uploaded document.
@@ -18,7 +19,7 @@ export const downloadFile: RequestHandler = async (req, res) => {
   }
 
   // Bytes are excluded from queries by default and must be asked for.
-  const file = await FileAsset.findById(req.params.id).select("+data");
+  const file = await FileAsset.findById(routeParam(req.params.id, "id")).select("+data");
   if (!file) {
     throw ApiError.notFound("File not found");
   }
