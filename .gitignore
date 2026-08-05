@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Compiled output
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment files — real secrets live here, only .env.example is committed
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+logs/
+
+# Caches and scratch space
+.cache/
+.turbo/
+tmp/
+temp/
+coverage/
+
+# Editor and OS artifacts
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vercel local link data
+.vercel
