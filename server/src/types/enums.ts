@@ -67,6 +67,19 @@ export function modulesForRole(role: UserRole): DashboardModule[] {
   return DASHBOARD_MODULES.filter((module) => MODULE_OWNER_ROLE[module] === role);
 }
 
+/**
+ * How far a registered borrower has progressed before applying. The sales
+ * module tracks leads by this, since "registered but has done nothing" and
+ * "filled everything in but has not submitted" need different follow-up.
+ */
+export const LeadStage = {
+  REGISTERED: "REGISTERED",
+  DETAILS_SUBMITTED: "DETAILS_SUBMITTED",
+  DOCUMENTS_UPLOADED: "DOCUMENTS_UPLOADED",
+} as const;
+
+export type LeadStage = (typeof LeadStage)[keyof typeof LeadStage];
+
 export const EmploymentMode = {
   SALARIED: "SALARIED",
   SELF_EMPLOYED: "SELF_EMPLOYED",
