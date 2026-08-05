@@ -5,7 +5,9 @@ import { z } from "zod";
 // Resolve .env relative to the server root rather than the current working
 // directory, so the app behaves the same whether it is started from server/,
 // from the repository root, or by a process manager.
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+// quiet suppresses the loader's own startup banner, keeping application logs
+// to lines this project actually produces.
+dotenv.config({ path: path.resolve(__dirname, "../../.env"), quiet: true });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
