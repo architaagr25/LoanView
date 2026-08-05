@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authRoutes from "../modules/auth/auth.routes";
 import borrowerRoutes from "../modules/borrower/borrower.routes";
+import fileRoutes from "../modules/files/files.routes";
 
 /**
  * Single place where feature modules are attached to the API. Each module owns
@@ -10,5 +11,6 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/borrower", borrowerRoutes);
+router.use("/files", fileRoutes);
 
 export default router;

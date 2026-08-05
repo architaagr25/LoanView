@@ -1,6 +1,7 @@
-import { Loan, Profile, type ProfileDocument } from "../../models";
+import { FileAsset, Loan, Profile, type ProfileDocument } from "../../models";
 import { BreStatus, LoanStatus } from "../../types/enums";
 import { ApiError } from "../../utils/ApiError";
+import { detectFileType, sanitiseFilename } from "../../utils/fileSignature";
 import { evaluateEligibility, type BreEvaluation } from "./bre";
 import type { SubmitProfileInput } from "./borrower.validation";
 
@@ -91,6 +92,55 @@ export async function submitProfile(
 
 export async function getProfile(userId: string): Promise<ProfileDocument | null> {
   return Profile.findOne({ user: userId });
+}
+
+export async function saveSalarySlip(
+  userId: string,
+  file: Express.Multer.File,
+): Promise<ProfileDocument> {
+  const profile = await Profile.findOne({ user: userId });
+  if (!profile) {
+    throw ApiError.badRequest("Submit your personal details before uploading a salary slip");
+  }
+
+  await assertNoLoanInProgress(userId);
+
+  // The declared type and extension were checked as the request arrived; this
+  // checks what the file actually contains, which the sender cannot fake.
+  const detectedType = detectFileType(file.buffer);
+  if (!detectedType) {
+    throw ApiError.badRequest("File contents do not match a PDF, JPG or PNG");
+  }
+
+  const originalName = sanitiseFilename(file.originalname);
+
+  const asset = await FileAsset.create({
+    owner: userId,
+    originalName,
+    mimeType: detectedType,
+    sizeBytes: file.size,
+    data: file.buffer,
+  });
+
+  const previousFileId = profile.salarySlip?.file;
+
+  profile.salarySlip = {
+    file: asset._id,
+    originalName,
+    mimeType: detectedType,
+    sizeBytes: file.size,
+    uploadedAt: new Date(),
+  };
+  await profile.save();
+
+  // The old file is removed only after the profile points at its replacement.
+  // Deleting first would leave the profile referencing a missing file if the
+  // save failed in between.
+  if (previousFileId) {
+    await FileAsset.findByIdAndDelete(previousFileId);
+  }
+
+  return profile;
 }
 
 function isDuplicateKey(error: unknown, field: string): boolean {

@@ -31,6 +31,24 @@ export const submitProfile: RequestHandler = async (req, res) => {
   });
 };
 
+export const uploadSalarySlip: RequestHandler = async (req, res) => {
+  const { userId } = requireAuth(req);
+
+  // Set by multer when a file was present. Absent means the form was submitted
+  // with no file, or with the file under a different field name.
+  if (!req.file) {
+    throw ApiError.badRequest('Attach a file in a field named "salarySlip"');
+  }
+
+  const profile = await borrowerService.saveSalarySlip(userId, req.file);
+
+  res.json({
+    success: true,
+    message: "Salary slip uploaded",
+    data: { profile: profile.toJSON() },
+  });
+};
+
 export const getProfile: RequestHandler = async (req, res) => {
   const { userId } = requireAuth(req);
   const profile = await borrowerService.getProfile(userId);
