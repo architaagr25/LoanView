@@ -4,6 +4,7 @@ import { env } from "./config/env";
 import { databaseStatus } from "./config/database";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { ApiError } from "./utils/ApiError";
+import apiRoutes from "./routes";
 
 const corsOptions: CorsOptions = {
   origin(origin, callback) {
@@ -42,6 +43,8 @@ export function createApp(): Express {
       },
     });
   });
+
+  app.use("/api", apiRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
