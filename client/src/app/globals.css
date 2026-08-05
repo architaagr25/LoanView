@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. Tailwind reads these directly, so --color-brand-600 becomes
+  bg-brand-600, text-brand-600, border-brand-600 and so on. Defining the palette
+  here rather than repeating hex values across components means the product has
+  one visual identity that can be adjusted in one place.
+*/
+@theme {
+  --color-brand-50: #eef3ff;
+  --color-brand-100: #dbe5ff;
+  --color-brand-200: #bed0ff;
+  --color-brand-300: #96b1ff;
+  --color-brand-400: #6b87fc;
+  --color-brand-500: #4a63f5;
+  --color-brand-600: #3543e9;
+  --color-brand-700: #2b34cd;
+  --color-brand-800: #262fa6;
+  --color-brand-900: #252f83;
+  --color-brand-950: #171c4c;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*
+  Light only, deliberately. A lending dashboard is read in offices and recorded
+  for review; a single presentation means the interface looks the same for
+  everyone regardless of their operating system preference, and every contrast
+  ratio only has to be verified once.
+*/
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/*
+  A visible focus ring on anything reachable by keyboard. Browsers provide one
+  by default, but Tailwind's reset removes it, so it has to be put back rather
+  than left off.
+*/
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-600;
+}
+
+/* Number inputs used for currency read better without the spinner arrows. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
