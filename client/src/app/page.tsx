@@ -1,15 +1,29 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
+import { LoadingBlock } from "@/components/ui/Spinner";
+import { homePathForRole, ROUTES } from "@/lib/routes";
+
+/**
+ * Entry point. Sends each visitor to the right place rather than showing a
+ * marketing page nobody in this system needs: a signed-in user goes to their
+ * own area, everyone else to sign-in.
+ */
 export default function HomePage() {
+  const { status, user, modules } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    router.replace(user ? homePathForRole(user.role, modules) : ROUTES.login);
+  }, [status, user, modules, router]);
+
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6">
-      <p className="text-sm font-medium tracking-wide text-brand-600 uppercase">
-        LoanView
-      </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
-        Loan Management System
-      </h1>
-      <p className="mt-4 text-slate-600">
-        Borrower portal and operations dashboard. Interface under construction.
-      </p>
+    <main className="flex min-h-dvh items-center justify-center">
+      <LoadingBlock label="Loading LoanView" />
     </main>
   );
 }
