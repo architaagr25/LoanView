@@ -132,6 +132,25 @@ export async function getLoanDetail(loanId: string) {
   return { loan, payments };
 }
 
+/**
+ * Raises a conflict if a status change is not permitted.
+ *
+ * Exported so that the payment path, which updates a loan inside a database
+ * transaction and therefore cannot call transitionLoan, still consults the same
+ * table rather than repeating the rule.
+ */
+export function assertTransitionAllowed(from: LoanStatus, to: LoanStatus): void {
+  const allowedNext = ALLOWED_TRANSITIONS[from];
+
+  if (!allowedNext.includes(to)) {
+    throw ApiError.conflict(
+      allowedNext.length > 0
+        ? `A loan with status ${from} cannot be moved to ${to}. Allowed next: ${allowedNext.join(", ")}.`
+        : `This loan is ${from} and can no longer be changed.`,
+    );
+  }
+}
+
 interface TransitionOptions {
   loanId: string;
   to: LoanStatus;
@@ -163,15 +182,7 @@ export async function transitionLoan({
     throw ApiError.notFound("Loan not found");
   }
 
-  const allowedNext = ALLOWED_TRANSITIONS[loan.status];
-
-  if (!allowedNext.includes(to)) {
-    throw ApiError.conflict(
-      allowedNext.length > 0
-        ? `A loan with status ${loan.status} cannot be moved to ${to}. Allowed next: ${allowedNext.join(", ")}.`
-        : `This loan is ${loan.status} and can no longer be changed.`,
-    );
-  }
+  assertTransitionAllowed(loan.status, to);
 
   loan.status = to;
   apply?.(loan);
