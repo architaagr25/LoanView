@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -30,14 +31,11 @@ export default function SignupPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    // Checked here rather than on the server, because the server never sees the
-    // second field — it exists purely to catch a typo before the account is
-    // created with a password the user cannot reproduce.
+    // Checked here because the server never sees the second field. It exists
+    // only to catch a typo before an account is created with a password its
+    // owner cannot reproduce.
     if (password !== confirmPassword) {
-      setErrors({
-        message: "",
-        fields: { confirmPassword: "Passwords do not match" },
-      });
+      setErrors({ message: "", fields: { confirmPassword: "Passwords do not match" } });
       return;
     }
 
@@ -55,12 +53,14 @@ export default function SignupPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Create an account</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Apply for a loan in four steps. Staff accounts are created internally.
-      </p>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Create your account</h1>
+        <p className="mt-2 text-slate-500">
+          Apply in three steps. Staff accounts are created internally.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
         {shouldShowSummary(errors) && <Alert tone="error">{errors.message}</Alert>}
 
         <TextField
@@ -72,6 +72,7 @@ export default function SignupPage() {
           onChange={(event) => setName(event.target.value)}
           error={errors.fields.name}
           placeholder="Rahul Mehta"
+          icon={<User className="size-4" aria-hidden="true" />}
         />
 
         <TextField
@@ -84,41 +85,50 @@ export default function SignupPage() {
           onChange={(event) => setEmail(event.target.value)}
           error={errors.fields.email}
           placeholder="you@example.com"
+          icon={<Mail className="size-4" aria-hidden="true" />}
         />
 
-        <TextField
-          label="Password"
-          type="password"
-          name="password"
-          autoComplete="new-password"
-          required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          error={errors.fields.password}
-          hint="At least 8 characters"
-          placeholder="••••••••"
-        />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextField
+            label="Password"
+            type="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={errors.fields.password}
+            hint="At least 8 characters"
+            placeholder="••••••••"
+            icon={<Lock className="size-4" aria-hidden="true" />}
+          />
 
-        <TextField
-          label="Confirm password"
-          type="password"
-          name="confirmPassword"
-          autoComplete="new-password"
-          required
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          error={errors.fields.confirmPassword}
-          placeholder="••••••••"
-        />
+          <TextField
+            label="Confirm password"
+            type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
+            required
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            error={errors.fields.confirmPassword}
+            placeholder="••••••••"
+            icon={<Lock className="size-4" aria-hidden="true" />}
+          />
+        </div>
 
-        <Button type="submit" loading={submitting} fullWidth>
+        <Button type="submit" size="lg" loading={submitting} fullWidth>
           {submitting ? "Creating account" : "Create account"}
+          {!submitting && <ArrowRight className="size-4" aria-hidden="true" />}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-slate-500">
+      <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{" "}
-        <Link href={ROUTES.login} className="font-medium text-brand-600 hover:text-brand-700">
+        <Link
+          href={ROUTES.login}
+          className="font-medium text-brand-600 transition-colors hover:text-brand-700"
+        >
           Sign in
         </Link>
       </p>

@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export interface Step {
@@ -22,54 +23,66 @@ interface StepperProps {
  */
 export function Stepper({ steps, current, completed, onSelect }: StepperProps) {
   return (
-    <ol className="flex flex-wrap items-center gap-x-2 gap-y-3">
-      {steps.map((step, index) => {
-        const isDone = completed.includes(step.id);
-        const isCurrent = step.id === current;
-        const canSelect = Boolean(onSelect) && isDone && !isCurrent;
+    <nav aria-label="Application progress">
+      <ol className="flex items-center gap-1 sm:gap-2">
+        {steps.map((step, index) => {
+          const isDone = completed.includes(step.id);
+          const isCurrent = step.id === current;
+          const canSelect = Boolean(onSelect) && isDone && !isCurrent;
 
-        return (
-          <li key={step.id} className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={!canSelect}
-              onClick={canSelect ? () => onSelect?.(step.id) : undefined}
-              className={cn(
-                "flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-sm transition-colors",
-                canSelect && "hover:bg-slate-100",
-                !canSelect && "cursor-default",
+          return (
+            <li key={step.id} className="flex flex-1 items-center gap-1 sm:gap-2">
+              <button
+                type="button"
+                disabled={!canSelect}
+                onClick={canSelect ? () => onSelect?.(step.id) : undefined}
+                aria-current={isCurrent ? "step" : undefined}
+                className={cn(
+                  "group flex items-center gap-2.5 rounded-xl py-1.5 pr-3 pl-1.5 transition-colors",
+                  canSelect ? "hover:bg-slate-100" : "cursor-default",
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300",
+                    isCurrent &&
+                      "bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-brand ring-4 ring-brand-100",
+                    isDone && !isCurrent && "bg-emerald-500 text-white",
+                    !isDone && !isCurrent && "bg-white text-slate-400 ring-1 ring-slate-200",
+                  )}
+                >
+                  {isDone && !isCurrent ? (
+                    <Check className="size-4" aria-hidden="true" strokeWidth={3} />
+                  ) : (
+                    step.id
+                  )}
+                </span>
+                <span
+                  className={cn(
+                    "hidden text-sm font-medium whitespace-nowrap transition-colors sm:inline",
+                    isCurrent ? "text-slate-900" : isDone ? "text-slate-600" : "text-slate-400",
+                  )}
+                >
+                  {step.title}
+                </span>
+              </button>
+
+              {index < steps.length - 1 && (
+                // The connector fills in as steps complete, so progress reads as
+                // one continuous line rather than three separate markers.
+                <span className="h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                  <span
+                    className={cn(
+                      "block h-full rounded-full bg-emerald-500 transition-all duration-500 ease-out",
+                      isDone ? "w-full" : "w-0",
+                    )}
+                  />
+                </span>
               )}
-            >
-              <span
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                  isCurrent
-                    ? "bg-brand-600 text-white"
-                    : isDone
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-slate-200 text-slate-500",
-                )}
-                aria-hidden="true"
-              >
-                {isDone && !isCurrent ? "✓" : step.id}
-              </span>
-              <span
-                className={cn(
-                  "font-medium whitespace-nowrap",
-                  isCurrent ? "text-slate-900" : isDone ? "text-slate-700" : "text-slate-400",
-                )}
-              >
-                {step.title}
-              </span>
-              {isCurrent && <span className="sr-only">(current step)</span>}
-            </button>
-
-            {index < steps.length - 1 && (
-              <span className="hidden h-px w-6 bg-slate-200 sm:block" aria-hidden="true" />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

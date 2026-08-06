@@ -1,20 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight, BanknoteArrowUp, CalendarDays, Percent, Wallet } from "lucide-react";
 import { useApplication } from "@/hooks/useApplication";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody, StatCard } from "@/components/ui/Card";
 import { EmptyState, PageHeader } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/Spinner";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatTenure } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
+import type { Loan } from "@/lib/types";
 
-/**
- * The borrower's home screen. Expanded into a full loan detail view in a later
- * step; for now it reports where the application stands and what to do next.
- */
 export default function PortalPage() {
   const { profile, loans, activeLoan, loading, error } = useApplication();
 
@@ -28,78 +26,160 @@ export default function PortalPage() {
     );
   }
 
-  const nextStepLabel = !profile
-    ? "Start your application"
+  const nextStep = !profile
+    ? "Start with your personal details"
     : !profile.salarySlip
-      ? "Continue — upload your salary slip"
-      : "Continue — choose your loan amount";
+      ? "Next: upload your salary slip"
+      : "Next: choose your loan amount";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
-        title="Your loans"
-        description="Track your application from request through to repayment."
+        eyebrow="Borrower portal"
+        title={profile ? `Hello, ${profile.fullName.split(" ")[0]}` : "Your loans"}
+        description="Track your application from request through to final repayment."
       />
 
       {!activeLoan && (
-        <Card>
-          <CardBody className="flex flex-wrap items-center justify-between gap-4">
+        // The call to action leads the page when there is nothing in progress,
+        // because starting or continuing an application is the only thing the
+        // borrower can usefully do at that point.
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-brand-600 to-brand-800">
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{
+              backgroundImage:
+                "radial-gradient(ellipse 30rem 20rem at 90% 10%, rgb(6 182 212 / 0.35), transparent)",
+            }}
+            aria-hidden="true"
+          />
+          <CardBody className="relative flex flex-wrap items-center justify-between gap-5 py-7">
             <div>
-              <p className="text-sm font-medium text-slate-900">
-                {loans.length > 0 ? "Apply for another loan" : "You have no active loan"}
-              </p>
-              <p className="mt-0.5 text-sm text-slate-500">{nextStepLabel}</p>
+              <h2 className="text-xl font-semibold tracking-tight text-white">
+                {loans.length > 0 ? "Apply for another loan" : "Apply for a loan"}
+              </h2>
+              <p className="mt-1 text-sm text-brand-100">{nextStep}</p>
             </div>
             <Link href={ROUTES.apply}>
-              <Button>{profile ? "Continue" : "Get started"}</Button>
+              <Button size="lg" variant="secondary">
+                {profile ? "Continue application" : "Get started"}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Button>
             </Link>
           </CardBody>
         </Card>
       )}
 
+      {activeLoan && <LoanSummary loan={activeLoan} />}
+
       {loans.length === 0 ? (
         <Card>
           <EmptyState
-            title="Nothing here yet"
+            title="No loans yet"
             description="Once you apply, your loan and its progress will appear here."
+            icon={<Wallet className="size-6" aria-hidden="true" />}
           />
         </Card>
       ) : (
-        <div className="space-y-4">
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold tracking-wide text-slate-500 uppercase">
+            {loans.length === 1 ? "Your loan" : "All loans"}
+          </h2>
           {loans.map((loan) => (
-            <Card key={loan.id}>
-              <CardBody className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {formatCurrency(loan.principal)}
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      {loan.tenureDays} days at {loan.interestRate}% p.a. · applied{" "}
-                      {formatDate(loan.createdAt)}
-                    </p>
-                  </div>
-                  <StatusBadge status={loan.status} />
-                </div>
-
-                {loan.status === "REJECTED" && loan.rejectionReason && (
-                  <Alert tone="error" title="Application declined">
-                    {loan.rejectionReason}
-                  </Alert>
-                )}
-
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-                  <Figure label="Interest" value={formatCurrency(loan.interestAmount)} />
-                  <Figure label="Total repayable" value={formatCurrency(loan.totalRepayment)} />
-                  <Figure label="Paid" value={formatCurrency(loan.amountPaid)} />
-                  <Figure label="Outstanding" value={formatCurrency(loan.outstandingAmount)} />
-                </dl>
-              </CardBody>
-            </Card>
+            <LoanCard key={loan.id} loan={loan} />
           ))}
-        </div>
+        </section>
       )}
     </div>
+  );
+}
+
+/** Headline figures for the loan currently in play. */
+function LoanSummary({ loan }: { loan: Loan }) {
+  const repaidPercent =
+    loan.totalRepayment > 0 ? Math.round((loan.amountPaid / loan.totalRepayment) * 100) : 0;
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        label="Loan amount"
+        value={formatCurrency(loan.principal)}
+        icon={<BanknoteArrowUp className="size-4" aria-hidden="true" />}
+        tone="brand"
+      />
+      <StatCard
+        label="Total repayable"
+        value={formatCurrency(loan.totalRepayment)}
+        hint={`Includes ${formatCurrency(loan.interestAmount)} interest`}
+        icon={<Percent className="size-4" aria-hidden="true" />}
+      />
+      <StatCard
+        label="Repaid so far"
+        value={formatCurrency(loan.amountPaid)}
+        hint={`${repaidPercent}% of the total`}
+        icon={<Wallet className="size-4" aria-hidden="true" />}
+        tone="success"
+      />
+      <StatCard
+        label="Outstanding"
+        value={formatCurrency(loan.outstandingAmount)}
+        hint={formatTenure(loan.tenureDays)}
+        icon={<CalendarDays className="size-4" aria-hidden="true" />}
+        tone={loan.outstandingAmount > 0 ? "warning" : "success"}
+      />
+    </div>
+  );
+}
+
+function LoanCard({ loan }: { loan: Loan }) {
+  const repaidPercent =
+    loan.totalRepayment > 0 ? Math.min(100, (loan.amountPaid / loan.totalRepayment) * 100) : 0;
+
+  return (
+    <Card interactive>
+      <CardBody className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xl font-semibold tracking-tight text-slate-900 tabular-nums">
+              {formatCurrency(loan.principal)}
+            </p>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {formatTenure(loan.tenureDays)} · {loan.interestRate}% p.a. · applied{" "}
+              {formatDate(loan.createdAt)}
+            </p>
+          </div>
+          <StatusBadge status={loan.status} />
+        </div>
+
+        {loan.status === "REJECTED" && loan.rejectionReason && (
+          <Alert tone="error" title="Application declined">
+            {loan.rejectionReason}
+          </Alert>
+        )}
+
+        {(loan.status === "DISBURSED" || loan.status === "CLOSED") && (
+          <div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Repayment progress</span>
+              <span className="font-medium tabular-nums">{Math.round(repaidPercent)}%</span>
+            </div>
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-700 ease-out"
+                style={{ width: `${repaidPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 sm:grid-cols-4">
+          <Figure label="Interest" value={formatCurrency(loan.interestAmount)} />
+          <Figure label="Total repayable" value={formatCurrency(loan.totalRepayment)} />
+          <Figure label="Paid" value={formatCurrency(loan.amountPaid)} />
+          <Figure label="Outstanding" value={formatCurrency(loan.outstandingAmount)} />
+        </dl>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -107,7 +187,7 @@ function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-xs text-slate-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-slate-900">{value}</dd>
+      <dd className="mt-0.5 text-sm font-semibold text-slate-900 tabular-nums">{value}</dd>
     </div>
   );
 }

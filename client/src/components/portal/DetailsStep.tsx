@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import { ArrowRight, CalendarDays, CreditCard, IndianRupee, UserRound } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { EMPLOYMENT_OPTIONS } from "@/lib/constants";
 import { previewEligibility } from "@/lib/eligibility";
@@ -82,6 +83,7 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
         <CardHeader
           title="Personal details"
           description="Used to confirm you are eligible to borrow."
+          icon={<UserRound className="size-4.5" aria-hidden="true" />}
         />
         <CardBody>
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -103,6 +105,7 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
               onChange={(event) => setFullName(event.target.value)}
               error={errors.fields.fullName}
               placeholder="As printed on your PAN card"
+              icon={<UserRound className="size-4" aria-hidden="true" />}
             />
 
             <TextField
@@ -117,7 +120,8 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
               hint="Ten characters, for example ABCDE1234F"
               placeholder="ABCDE1234F"
               maxLength={10}
-              className="font-mono tracking-wider uppercase"
+              icon={<CreditCard className="size-4" aria-hidden="true" />}
+              className="font-mono tracking-[0.15em] uppercase"
             />
 
             <TextField
@@ -129,6 +133,7 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
               onChange={(event) => setDateOfBirth(event.target.value)}
               error={errors.fields.dateOfBirth}
               max={todayAsInputValue()}
+              icon={<CalendarDays className="size-4" aria-hidden="true" />}
             />
 
             <TextField
@@ -144,6 +149,8 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
               error={errors.fields.monthlySalary}
               hint="Gross monthly income in rupees"
               placeholder="60000"
+              icon={<IndianRupee className="size-4" aria-hidden="true" />}
+              suffix="/ month"
             />
 
             <SelectField
@@ -160,14 +167,15 @@ export function DetailsStep({ profile, onSaved }: DetailsStepProps) {
             {/* Never disabled on the strength of the local check. The server
                 decides, and a mistake in this copy of the rules must not be
                 able to lock someone out of applying. */}
-            <Button type="submit" loading={submitting}>
+            <Button type="submit" size="lg" loading={submitting}>
               {submitting ? "Checking eligibility" : "Save and continue"}
+              {!submitting && <ArrowRight className="size-4" aria-hidden="true" />}
             </Button>
           </form>
         </CardBody>
       </Card>
 
-      <div className="lg:sticky lg:top-6 lg:self-start">
+      <div className="lg:sticky lg:top-24 lg:self-start">
         <EligibilityChecklist rules={rules} />
       </div>
     </div>

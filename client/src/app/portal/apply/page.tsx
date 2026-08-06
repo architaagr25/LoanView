@@ -70,8 +70,9 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
+        eyebrow="New application"
         title="Apply for a loan"
         description="Three short steps. Your progress is saved as you go."
       />

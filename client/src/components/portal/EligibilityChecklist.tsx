@@ -1,55 +1,73 @@
+import { Check, Minus, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { RulePreview } from "@/lib/eligibility";
 
-const MARKS: Record<RulePreview["state"], { symbol: string; classes: string }> = {
-  pending: { symbol: "•", classes: "bg-slate-100 text-slate-400" },
-  passed: { symbol: "✓", classes: "bg-emerald-100 text-emerald-700" },
-  failed: { symbol: "✕", classes: "bg-rose-100 text-rose-700" },
-};
+const MARKS = {
+  pending: { Icon: Minus, chip: "bg-slate-100 text-slate-400", text: "text-slate-500" },
+  passed: { Icon: Check, chip: "bg-emerald-500 text-white", text: "text-slate-700" },
+  failed: { Icon: X, chip: "bg-rose-500 text-white", text: "text-rose-700" },
+} as const;
 
 /**
  * Live view of the eligibility rules as the form is filled in.
  *
- * Showing the criteria up front, and marking each one as it is satisfied, means
- * an applicant who will be declined finds out while they can still correct
- * something — rather than filling in every field and then being refused with no
- * indication of which answer caused it.
+ * Showing the criteria up front and marking each one as it is satisfied means
+ * an applicant who will be declined finds out while they can still change an
+ * answer, rather than completing every field and then being refused with no
+ * indication of which one caused it.
  */
 export function EligibilityChecklist({ rules }: { rules: RulePreview[] }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-slate-900">Eligibility criteria</h3>
-      <p className="mt-0.5 text-xs text-slate-500">All four must be met to apply.</p>
+  const passed = rules.filter((rule) => rule.state === "passed").length;
+  const failed = rules.some((rule) => rule.state === "failed");
 
-      <ul className="mt-3 space-y-2.5">
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-card">
+      <div className="border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-slate-900">Eligibility</h3>
+          <span
+            className={cn(
+              "text-xs font-semibold tabular-nums",
+              failed ? "text-rose-600" : passed === rules.length ? "text-emerald-600" : "text-slate-400",
+            )}
+          >
+            {passed} of {rules.length}
+          </span>
+        </div>
+
+        {/* A single bar reading the same thing as the list below it. Progress is
+            easier to judge from a filled proportion than from counting ticks. */}
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500 ease-out",
+              failed ? "bg-rose-400" : "bg-emerald-500",
+            )}
+            style={{ width: `${(passed / rules.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <ul className="space-y-3 px-5 py-4">
         {rules.map((rule) => {
-          const mark = MARKS[rule.state];
+          const { Icon, chip, text } = MARKS[rule.state];
 
           return (
-            <li key={rule.code} className="flex items-start gap-2.5">
+            <li key={rule.code} className="flex items-start gap-3">
               <span
                 className={cn(
-                  "mt-px flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                  mark.classes,
+                  "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full transition-colors duration-300",
+                  chip,
                 )}
                 aria-hidden="true"
               >
-                {mark.symbol}
+                <Icon className="size-3" strokeWidth={3} />
               </span>
-              <span
-                className={cn(
-                  "text-sm",
-                  rule.state === "failed"
-                    ? "text-rose-700"
-                    : rule.state === "passed"
-                      ? "text-slate-700"
-                      : "text-slate-500",
-                )}
-              >
+              <span className={cn("text-sm leading-snug", text)}>
                 {rule.label}
                 {rule.message && <span className="text-slate-400"> — {rule.message}</span>}
-                {/* State is conveyed by symbol and colour for sighted users;
-                    this is how it reaches everyone else. */}
+                {/* State is carried by icon and colour for sighted users; this
+                    is how it reaches everyone else. */}
                 <span className="sr-only">
                   {rule.state === "passed"
                     ? " (met)"

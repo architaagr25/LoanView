@@ -2,32 +2,94 @@
 
 /*
   Design tokens. Tailwind reads these directly, so --color-brand-600 becomes
-  bg-brand-600, text-brand-600, border-brand-600 and so on. Defining the palette
-  here rather than repeating hex values across components means the product has
-  one visual identity that can be adjusted in one place.
+  bg-brand-600, text-brand-600 and so on. One definition per value means the
+  product reads as a single interface rather than a series of screens that were
+  each styled on their own.
 */
 @theme {
-  --color-brand-50: #eef3ff;
-  --color-brand-100: #dbe5ff;
-  --color-brand-200: #bed0ff;
-  --color-brand-300: #96b1ff;
-  --color-brand-400: #6b87fc;
-  --color-brand-500: #4a63f5;
-  --color-brand-600: #3543e9;
-  --color-brand-700: #2b34cd;
-  --color-brand-800: #262fa6;
-  --color-brand-900: #252f83;
-  --color-brand-950: #171c4c;
+  /* Indigo-leaning primary. Confident without being loud — this is a lending
+     product, and a saturated brand colour reads as consumer-app playful. */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+
+  /* Used only for the brand panel gradient, so it stays a deliberate accent
+     rather than a second colour competing with the primary. */
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Softer and more diffuse than the defaults. Depth should be felt rather
+     than seen — a hard drop shadow makes a card look pasted on. */
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --shadow-card-hover: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.06);
+  --shadow-lifted: 0 10px 30px -10px rgb(15 23 42 / 0.15), 0 4px 12px -4px rgb(15 23 42 / 0.08);
+  --shadow-brand: 0 4px 14px -4px rgb(79 70 229 / 0.4);
+  --shadow-brand-hover: 0 6px 20px -4px rgb(79 70 229 / 0.5);
+
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-rise: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /*
-  Light only, deliberately. A lending dashboard is read in offices and recorded
-  for review; a single presentation means the interface looks the same for
-  everyone regardless of their operating system preference, and every contrast
-  ratio only has to be verified once.
+  Light only, deliberately. A lending dashboard is read in offices and, here,
+  recorded for review — one presentation means it looks the same for everyone
+  regardless of their system preference, and every contrast ratio only has to be
+  verified once.
 */
 html {
   color-scheme: light;
@@ -35,18 +97,21 @@ html {
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
+  /* Two very faint colour washes behind the page. Flat grey reads as unfinished;
+     this gives the surface some depth without becoming decoration. */
+  background-image:
+    radial-gradient(ellipse 80rem 40rem at 50% -10rem, rgb(99 102 241 / 0.07), transparent),
+    radial-gradient(ellipse 60rem 30rem at 100% 0%, rgb(6 182 212 / 0.05), transparent);
+  background-attachment: fixed;
 }
 
-/*
-  A visible focus ring on anything reachable by keyboard. Browsers provide one
-  by default, but Tailwind's reset removes it, so it has to be put back rather
-  than left off.
-*/
+/* Tailwind's reset removes the browser's focus ring, so it has to be put back —
+   without it the whole interface becomes unusable by keyboard. */
 :focus-visible {
-  @apply outline-2 outline-offset-2 outline-brand-600;
+  @apply outline-2 outline-offset-2 outline-brand-500;
 }
 
-/* Number inputs used for currency read better without the spinner arrows. */
+/* Currency fields read better without the spinner arrows. */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -56,4 +121,36 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Range inputs are styled per-browser or not at all; these are the loan amount
+   and tenure sliders, which are the most-used control in the product. */
+input[type="range"] {
+  @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  @apply size-5 appearance-none rounded-full border-2 border-white bg-brand-600 transition-transform;
+  box-shadow: 0 2px 8px -1px rgb(79 70 229 / 0.5);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+  @apply size-5 appearance-none rounded-full border-2 border-white bg-brand-600;
+  box-shadow: 0 2px 8px -1px rgb(79 70 229 / 0.5);
+}
+
+/* Respect a stated preference for less motion — the animations here are
+   decoration, and nobody should have to sit through them. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

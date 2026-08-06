@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { DemoCredentials } from "@/components/DemoCredentials";
 import { Alert } from "@/components/ui/Alert";
@@ -20,7 +21,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState(NO_FORM_ERRORS);
   const [submitting, setSubmitting] = useState(false);
 
-  // Someone who is already signed in has no business on this screen.
+  // Someone already signed in has no business on this screen.
   useEffect(() => {
     if (status === "authenticated" && user) {
       router.replace(homePathForRole(user.role, modules));
@@ -37,7 +38,7 @@ export default function LoginPage() {
       router.replace(homePathForRole(payload.user.role, payload.modules));
     } catch (error) {
       setErrors(toFormErrors(error));
-      // Only released on failure. On success the redirect is already under way,
+      // Released only on failure. On success a redirect is already under way,
       // and re-enabling the button would invite a second submission.
       setSubmitting(false);
     }
@@ -45,12 +46,12 @@ export default function LoginPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Sign in</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Borrowers and internal staff sign in here.
-      </p>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
+        <p className="mt-2 text-slate-500">Sign in to continue to your account.</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
         {shouldShowSummary(errors) && <Alert tone="error">{errors.message}</Alert>}
 
         <TextField
@@ -63,6 +64,7 @@ export default function LoginPage() {
           onChange={(event) => setEmail(event.target.value)}
           error={errors.fields.email}
           placeholder="you@example.com"
+          icon={<Mail className="size-4" aria-hidden="true" />}
         />
 
         <TextField
@@ -75,16 +77,21 @@ export default function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
           error={errors.fields.password}
           placeholder="••••••••"
+          icon={<Lock className="size-4" aria-hidden="true" />}
         />
 
-        <Button type="submit" loading={submitting} fullWidth>
+        <Button type="submit" size="lg" loading={submitting} fullWidth>
           {submitting ? "Signing in" : "Sign in"}
+          {!submitting && <ArrowRight className="size-4" aria-hidden="true" />}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-slate-500">
-        New here?{" "}
-        <Link href={ROUTES.signup} className="font-medium text-brand-600 hover:text-brand-700">
+      <p className="mt-6 text-center text-sm text-slate-500">
+        New to LoanView?{" "}
+        <Link
+          href={ROUTES.signup}
+          className="font-medium text-brand-600 transition-colors hover:text-brand-700"
+        >
           Create a borrower account
         </Link>
       </p>
