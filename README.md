@@ -9,7 +9,7 @@ lifecycle under role-based access control.
 | | |
 | -------- | ---------------------------------------------------------------------------- |
 | Frontend | **https://loan-view.vercel.app** |
-| API      | https://loanview-api.onrender.com — health check at [`/api/health`](https://loanview-api.onrender.com/api/health) |
+| API      | https://loanview-api.onrender.com - health check at [`/api/health`](https://loanview-api.onrender.com/api/health) |
 
 Sign in with any of the [demo accounts](#demo-accounts) below.
 
@@ -29,8 +29,8 @@ Sign in with any of the [demo accounts](#demo-accounts) below.
 ## Layout
 
 ```
-client/   Next.js application — borrower portal and operations dashboard
-server/   Express REST API — business rules, auth, loan lifecycle
+client/   Next.js application - borrower portal and operations dashboard
+server/   Express REST API - business rules, auth, loan lifecycle
 ```
 
 ## How a loan moves
@@ -60,7 +60,7 @@ APPLIED ──approve──> SANCTIONED ──disburse──> DISBURSED ──fu
 | `admin`        | all four dashboard modules | everything the executives can do            |
 
 Access is checked on the server on every request. The frontend hides what a role
-cannot use, but that is a convenience — the server is the boundary.
+cannot use, but that is a convenience - the server is the boundary.
 
 ### Eligibility rules
 
@@ -149,7 +149,7 @@ something other than the password published here.
 ### Trying the full lifecycle
 
 1. Sign in as the borrower, submit your details, upload a salary slip, apply.
-2. Sign in as sanction — the application is waiting. Approve it.
+2. Sign in as sanction - the application is waiting. Approve it.
 3. Sign in as disbursement and release the funds.
 4. Sign in as collection and record a repayment. Paying the full outstanding
    balance closes the loan.
