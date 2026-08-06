@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApplication } from "@/hooks/useApplication";
 import { DetailsStep } from "@/components/portal/DetailsStep";
+import { LoanConfigStep } from "@/components/portal/LoanConfigStep";
+import { UploadStep } from "@/components/portal/UploadStep";
 import { Stepper, type Step } from "@/components/portal/Stepper";
 import { Alert } from "@/components/ui/Alert";
-import { Card, CardBody } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/EmptyState";
 import { LoadingBlock } from "@/components/ui/Spinner";
 import { ROUTES } from "@/lib/routes";
@@ -82,19 +83,21 @@ export default function ApplyPage() {
       {currentStep === 1 && <DetailsStep profile={profile} onSaved={handleStepSaved} />}
 
       {currentStep === 2 && (
-        <Card>
-          <CardBody>
-            <p className="text-sm text-slate-500">Salary slip upload — added in the next step.</p>
-          </CardBody>
-        </Card>
+        <UploadStep
+          profile={profile}
+          onUploaded={handleStepSaved}
+          onBack={() => setSelectedStep(1)}
+          onContinue={() => setSelectedStep(3)}
+        />
       )}
 
       {currentStep === 3 && (
-        <Card>
-          <CardBody>
-            <p className="text-sm text-slate-500">Loan configuration — added in the next step.</p>
-          </CardBody>
-        </Card>
+        <LoanConfigStep
+          // The application is submitted, so the borrower belongs on the status
+          // screen rather than back in a wizard they can no longer use.
+          onApplied={() => router.replace(ROUTES.portal)}
+          onBack={() => setSelectedStep(2)}
+        />
       )}
     </div>
   );
