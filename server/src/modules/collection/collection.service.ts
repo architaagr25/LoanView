@@ -58,7 +58,14 @@ export async function recordPayment(
       // date with no time and therefore parses to midnight, while disbursement
       // carries a real timestamp — so a same-day repayment would otherwise be
       // rejected for preceding a disbursement that happened that afternoon.
-      if (loan.disbursedAt && input.paidOn.getTime() < startOfUtcDay(loan.disbursedAt)) {
+      //
+      // A further day of slack, for the same reason the payment date itself
+      // allows one: the executive's calendar day and the server's need not be
+      // the same day, and the boundary should not decide whether a genuine
+      // repayment can be recorded.
+      const earliestAcceptable = startOfUtcDay(loan.disbursedAt ?? new Date()) - MILLISECONDS_PER_DAY;
+
+      if (loan.disbursedAt && input.paidOn.getTime() < earliestAcceptable) {
         throw ApiError.badRequest("Payment date cannot be earlier than the disbursement date");
       }
 
@@ -131,6 +138,8 @@ export async function recordPayment(
     await session.endSession();
   }
 }
+
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /** Midnight UTC on the day the given instant falls, as a timestamp. */
 function startOfUtcDay(date: Date): number {
