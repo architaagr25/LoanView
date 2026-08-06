@@ -126,7 +126,10 @@ export default function LoanDetailPage(props: PageProps<"/portal/loans/[id]">) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-6">
+        {/* min-w-0 because a grid item will not shrink below its content by
+            default, and the table below sets a minimum width — without this the
+            column keeps that width on a phone and drags the page sideways. */}
+        <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader
               title="Repayments"
@@ -148,7 +151,7 @@ export default function LoanDetailPage(props: PageProps<"/portal/loans/[id]">) {
                 icon={<Receipt className="size-6" aria-hidden="true" />}
               />
             ) : (
-              <TableWrap>
+              <TableWrap minWidth="min-w-[20rem]">
                 <THead>
                   <tr>
                     <TH>Date</TH>

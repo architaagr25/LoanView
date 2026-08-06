@@ -247,7 +247,7 @@ export default function CollectionModulePage() {
                 ) : reviewPayments.length === 0 ? (
                   <p className="text-sm text-slate-500">No payments recorded yet.</p>
                 ) : (
-                  <TableWrap>
+                  <TableWrap minWidth="min-w-[20rem]">
                     <THead>
                       <tr>
                         <TH>Date</TH>

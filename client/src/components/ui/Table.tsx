@@ -7,11 +7,22 @@ import { cn } from "@/lib/cn";
  * The queues carry enough columns to overflow a phone, and a table that
  * stretches the page is worse than one scrolling inside its own container: it
  * pushes every other element sideways with it.
+ *
+ * The minimum width is adjustable because it is a promise about how much room
+ * the columns need. A three-column list of payments does not need the same
+ * floor as a seven-column queue, and claiming it does forces a scrollbar onto a
+ * table that would have fitted.
  */
-export function TableWrap({ children }: { children: ReactNode }) {
+export function TableWrap({
+  children,
+  minWidth = "min-w-[44rem]",
+}: {
+  children: ReactNode;
+  minWidth?: string;
+}) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[44rem] text-left text-sm">{children}</table>
+      <table className={cn("w-full text-left text-sm", minWidth)}>{children}</table>
     </div>
   );
 }
