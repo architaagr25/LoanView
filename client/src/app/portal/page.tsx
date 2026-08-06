@@ -1,17 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BanknoteArrowUp, CalendarDays, Percent, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  BanknoteArrowUp,
+  CalendarDays,
+  ChevronRight,
+  Percent,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { useApplication } from "@/hooks/useApplication";
+import { DocumentLink } from "@/components/DocumentLink";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Card, CardBody, StatCard } from "@/components/ui/Card";
+import { Card, CardBody, CardHeader, DetailRow, StatCard } from "@/components/ui/Card";
 import { EmptyState, PageHeader } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/Spinner";
+import { EMPLOYMENT_OPTIONS } from "@/lib/constants";
 import { formatCurrency, formatDate, formatTenure } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
-import type { Loan } from "@/lib/types";
+import type { Loan, Profile } from "@/lib/types";
 
 export default function PortalPage() {
   const { profile, loans, activeLoan, loading, error } = useApplication();
@@ -90,7 +100,53 @@ export default function PortalPage() {
           ))}
         </section>
       )}
+
+      {profile && <ProfileCard profile={profile} />}
     </div>
+  );
+}
+
+/** The details the eligibility decision was made on, and the document behind it. */
+function ProfileCard({ profile }: { profile: Profile }) {
+  const employment =
+    EMPLOYMENT_OPTIONS.find((option) => option.value === profile.employmentMode)?.label ??
+    profile.employmentMode;
+
+  return (
+    <Card>
+      <CardHeader
+        title="Your details"
+        description="Used to assess your eligibility."
+        icon={<UserRound className="size-4.5" aria-hidden="true" />}
+      />
+      <CardBody className="grid gap-6 lg:grid-cols-2">
+        <dl>
+          <DetailRow label="Full name" value={profile.fullName} />
+          <DetailRow
+            label="PAN"
+            value={<span className="font-mono tracking-wider">{profile.pan}</span>}
+          />
+          <DetailRow label="Date of birth" value={formatDate(profile.dateOfBirth)} />
+          <DetailRow label="Monthly salary" value={formatCurrency(profile.monthlySalary)} />
+          <DetailRow label="Employment" value={employment} />
+        </dl>
+
+        <div>
+          <p className="text-sm font-medium text-slate-700">Salary slip</p>
+          <div className="mt-2">
+            {profile.salarySlip ? (
+              <DocumentLink
+                fileId={profile.salarySlip.file}
+                name={profile.salarySlip.originalName}
+                sizeBytes={profile.salarySlip.sizeBytes}
+              />
+            ) : (
+              <p className="text-sm text-slate-500">Not uploaded yet.</p>
+            )}
+          </div>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -136,50 +192,57 @@ function LoanCard({ loan }: { loan: Loan }) {
     loan.totalRepayment > 0 ? Math.min(100, (loan.amountPaid / loan.totalRepayment) * 100) : 0;
 
   return (
-    <Card interactive>
-      <CardBody className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xl font-semibold tracking-tight text-slate-900 tabular-nums">
-              {formatCurrency(loan.principal)}
-            </p>
-            <p className="mt-0.5 text-sm text-slate-500">
-              {formatTenure(loan.tenureDays)} · {loan.interestRate}% p.a. · applied{" "}
-              {formatDate(loan.createdAt)}
-            </p>
-          </div>
-          <StatusBadge status={loan.status} />
-        </div>
-
-        {loan.status === "REJECTED" && loan.rejectionReason && (
-          <Alert tone="error" title="Application declined">
-            {loan.rejectionReason}
-          </Alert>
-        )}
-
-        {(loan.status === "DISBURSED" || loan.status === "CLOSED") && (
-          <div>
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span>Repayment progress</span>
-              <span className="font-medium tabular-nums">{Math.round(repaidPercent)}%</span>
+    // The whole card is the link, rather than a "view" action tucked in a
+    // corner — the card is what someone reaches for.
+    <Link href={`/portal/loans/${loan.id}`} className="block">
+      <Card interactive>
+        <CardBody className="space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xl font-semibold tracking-tight text-slate-900 tabular-nums">
+                {formatCurrency(loan.principal)}
+              </p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {formatTenure(loan.tenureDays)} · {loan.interestRate}% p.a. · applied{" "}
+                {formatDate(loan.createdAt)}
+              </p>
             </div>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-700 ease-out"
-                style={{ width: `${repaidPercent}%` }}
-              />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={loan.status} />
+              <ChevronRight className="size-4 text-slate-300" aria-hidden="true" />
             </div>
           </div>
-        )}
 
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 sm:grid-cols-4">
-          <Figure label="Interest" value={formatCurrency(loan.interestAmount)} />
-          <Figure label="Total repayable" value={formatCurrency(loan.totalRepayment)} />
-          <Figure label="Paid" value={formatCurrency(loan.amountPaid)} />
-          <Figure label="Outstanding" value={formatCurrency(loan.outstandingAmount)} />
-        </dl>
-      </CardBody>
-    </Card>
+          {loan.status === "REJECTED" && loan.rejectionReason && (
+            <Alert tone="error" title="Application declined">
+              {loan.rejectionReason}
+            </Alert>
+          )}
+
+          {(loan.status === "DISBURSED" || loan.status === "CLOSED") && (
+            <div>
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>Repayment progress</span>
+                <span className="font-medium tabular-nums">{Math.round(repaidPercent)}%</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-700 ease-out"
+                  style={{ width: `${repaidPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 sm:grid-cols-4">
+            <Figure label="Interest" value={formatCurrency(loan.interestAmount)} />
+            <Figure label="Total repayable" value={formatCurrency(loan.totalRepayment)} />
+            <Figure label="Paid" value={formatCurrency(loan.amountPaid)} />
+            <Figure label="Outstanding" value={formatCurrency(loan.outstandingAmount)} />
+          </dl>
+        </CardBody>
+      </Card>
+    </Link>
   );
 }
 
