@@ -7,9 +7,9 @@ lifecycle under role-based access control.
 ## Live demo
 
 | | |
-| -------- | --------------------- |
-| Frontend | _added once deployed_ |
-| API      | _added once deployed_ |
+| -------- | ---------------------------------------------------------------------------- |
+| Frontend | **https://loan-view.vercel.app** |
+| API      | https://loanview-api.onrender.com — health check at [`/api/health`](https://loanview-api.onrender.com/api/health) |
 
 Sign in with any of the [demo accounts](#demo-accounts) below.
 
