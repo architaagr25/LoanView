@@ -5,6 +5,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
   type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from "react";
 import { AlertCircle, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -160,6 +161,35 @@ export function SelectField({
           aria-hidden="true"
         />
       </div>
+    </FieldShell>
+  );
+}
+
+interface TextAreaFieldProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "id"> {
+  label: string;
+  hint?: string;
+  error?: string;
+}
+
+export function TextAreaField({ label, hint, error, className, ...props }: TextAreaFieldProps) {
+  const id = useId();
+
+  return (
+    <FieldShell id={id} label={label} hint={hint} error={error}>
+      <textarea
+        id={id}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+        className={cn(
+          CONTROL_BASE,
+          error ? CONTROL_INVALID : CONTROL_NORMAL,
+          // Vertical only. Free resizing lets a textarea be dragged wider than
+          // its container, which breaks the layout around it.
+          "resize-y",
+          className,
+        )}
+        {...props}
+      />
     </FieldShell>
   );
 }
